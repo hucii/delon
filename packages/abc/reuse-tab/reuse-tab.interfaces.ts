@@ -77,7 +77,7 @@ export interface ReuseContextEvent {
   customContextMenu?: ReuseCustomContextMenu[];
 }
 
-export type CloseType = 'close' | 'closeOther' | 'closeRight' | 'clear' | 'custom' | null;
+export type CloseType = 'reload' | 'close' | 'closeOther' | 'closeRight' | 'clear' | 'custom' | null;
 
 export interface ReuseContextCloseEvent {
   type: CloseType;

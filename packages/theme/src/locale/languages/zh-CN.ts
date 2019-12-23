@@ -13,6 +13,7 @@ export default {
     clearText: '清空',
   },
   reuseTab: {
+    reload: '刷新',
     close: '关闭标签',
     closeOther: '关闭其它标签',
     closeRight: '关闭右侧标签',

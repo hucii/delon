@@ -1,4 +1,8 @@
 <ul nz-menu>
+    <li nz-menu-item 
+     (click)="click($event, 'reload')" 
+     data-type="reload" 
+     [innerHTML]="i18n.reload"></li>
   <li nz-menu-item
       (click)="click($event, 'close')"
       data-type="close"

@@ -7,6 +7,7 @@ import {
   NavigationStart,
   Router,
   ROUTER_CONFIGURATION,
+  Params,
 } from '@angular/router';
 import { BehaviorSubject, Observable, Unsubscribable } from 'rxjs';
 
@@ -29,6 +30,7 @@ export class ReuseTabService implements OnDestroy {
   private _closableCached: { [url: string]: boolean } = {};
   private _router$: Unsubscribable;
   private removeUrlBuffer: string | null;
+  private reloadUrlBuffer: string | null;
   private positionBuffer: { [url: string]: [number, number] } = {};
   debug = false;
   mode = ReuseTabMatchMode.Menu;
@@ -204,6 +206,13 @@ export class ReuseTabService implements OnDestroy {
     }
     this.injector.get<Router>(Router).navigateByUrl(newUrl);
   }
+  reload(url: string, queryParams?: Params | null) {
+    this.reloadUrlBuffer = url;
+    this.injector.get(Router).navigateByUrl(`${url}?reload=${new Date().getTime()}`, {
+      skipLocationChange: true,
+      queryParams,
+    });
+  }
   /**
    * 获取标题，顺序如下：
    *
@@ -299,9 +308,15 @@ export class ReuseTabService implements OnDestroy {
   /**
    * 检查快照是否允许被复用
    */
-  can(route: ActivatedRouteSnapshot): boolean {
+  can(route: ActivatedRouteSnapshot, isDi: boolean): boolean {
     const url = this.getUrl(route);
     if (url === this.removeUrlBuffer) return false;
+    if (url === this.reloadUrlBuffer) {
+      if (!isDi) {
+        this.reloadUrlBuffer = null;
+      }
+      return false;
+    }
 
     if (route.data && typeof route.data.reuse === 'boolean') return route.data.reuse;
 
@@ -365,8 +380,8 @@ export class ReuseTabService implements OnDestroy {
    */
   shouldDetach(route: ActivatedRouteSnapshot): boolean {
     if (this.hasInValidRoute(route)) return false;
-    this.di('#shouldDetach', this.can(route), this.getUrl(route));
-    return this.can(route);
+    this.di('#shouldDetach', this.can(route, true), this.getUrl(route));
+    return this.can(route, false);
   }
 
   /**
@@ -440,10 +455,12 @@ export class ReuseTabService implements OnDestroy {
     if (!ret) return false;
 
     const path = ((future.routeConfig && future.routeConfig.path) || '') as string;
+    const futureUrl = this.getUrl(future);
+    const currUrl = this.getUrl(curr);
     if (path.length > 0 && ~path.indexOf(':')) {
-      const futureUrl = this.getUrl(future);
-      const currUrl = this.getUrl(curr);
       ret = futureUrl === currUrl;
+    } else if (path.length > 0 && futureUrl.match(`${path}$`) && currUrl === this.reloadUrlBuffer) {
+      ret = futureUrl === currUrl ? false : ret;
     }
     this.di('=====================');
     this.di('#shouldReuseRoute', ret, `${this.getUrl(curr)}=>${this.getUrl(future)}`, future, curr);
