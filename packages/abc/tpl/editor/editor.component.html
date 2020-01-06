@@ -1,0 +1,397 @@
+<div class="edit-tpl">
+  <lm-tool-bar> </lm-tool-bar>
+  <div class="panel" [style.height.px]="srv.editorHeight">
+    <div
+      class="paper"
+      [style.padding.px]="srv.padding"
+      [style.height.px]="srv.paperHeightPx"
+      [style.width.px]="srv.paperWidthPx"
+    >
+      <div class="page-header">
+        {{ srv.paperHeader.value ? srv.paperHeader.name : '' }}
+      </div>
+      <div class="page-footer">
+        {{ srv.paperFooter.value ? srv.paperFooter.name : '' }}
+      </div>
+      <div class="header" [style.height.px]="srv.headerHeight">
+        <div class="area-mark" [style.left.px]="srv.markLeft">
+          表头区
+        </div>
+        <lm-dnd-element type="image" [data]="h" boundary=".paper" *ngFor="let h of srv.formPic">
+          <img class="dnd-img" [src]="h.thumbUrl || h.value" />
+        </lm-dnd-element>
+        <lm-dnd-element [data]="h" boundary=".header" *ngFor="let h of srv.selectedFormHeaders">
+          {{ srv.isTypeInput(h) ? h.value : h.title }}
+        </lm-dnd-element>
+      </div>
+      <div class="body">
+        <div class="area-mark" [style.left.px]="srv.markLeft">
+          表体区
+        </div>
+        <div class="body-table">
+          <ul cdkDropList cdkDropListOrientation="horizontal" class="table-header" (cdkDropListDropped)="drop($event)">
+            <li class="table-header-item" *ngFor="let h of srv.selectedFormBodys" cdkDrag>
+              <lm-resizable-element [data]="h">
+                <div class="table-el-handle" cdkDragHandle>
+                  {{ h.title }}
+                </div>
+              </lm-resizable-element>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div
+        class="footer"
+        [style.height.px]="srv.footerHeight"
+        [ngStyle]="{ bottom: srv.fixedFooter ? '30px' : 'auto', width: 'calc(100% - ' + srv.padding * 2 + 'px)' }"
+      >
+        <div class="area-mark" [style.left.px]="srv.markLeft">
+          表尾区
+        </div>
+        <lm-dnd-element [data]="h" boundary=".footer" *ngFor="let h of srv.selectedFormFooters">
+          {{ srv.isTypeInput(h) ? h.value : h.title }}
+        </lm-dnd-element>
+      </div>
+    </div>
+  </div>
+  <div class="toolpanel" [style.height.px]="srv.editorHeight">
+    <nz-tabset [nzTabPosition]="'top'" [nzType]="'card'">
+      <nz-tab [nzTitle]="'基础配置'">
+        <div class="toolpanel__tab" [style.height.px]="srv.tabHeight">
+          <ng-container *ngIf="customBaseTpl; else baseTpl"></ng-container>
+        </div>
+      </nz-tab>
+      <nz-tab [nzTitle]="'数据源设置'">
+        <div class="toolpanel__tab" [style.height.px]="srv.tabHeight">
+          <ng-container *ngIf="customDataTpl; else dataTpl"></ng-container>
+        </div>
+      </nz-tab>
+    </nz-tabset>
+  </div>
+</div>
+
+<ng-template #baseTpl>
+  <form nz-form nzLayout="vertical">
+    <nz-form-item nzGutter="8" *ngIf="!srv.isEdit">
+      <nz-form-label nzRequired>打印对象</nz-form-label>
+      <nz-form-control>
+        <nz-select
+          [(ngModel)]="srv.printObj"
+          [nzDisabled]="srv.isEdit"
+          (ngModelChange)="srv.printChange()"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <nz-option *ngFor="let p of srv.printObjs" [nzValue]="p" [nzLabel]="p.name"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item *ngIf="!srv.isDesign">
+      <nz-form-label nzRequired>模板名称</nz-form-label>
+      <nz-form-control>
+        <input
+          type="text"
+          nz-input
+          [(ngModel)]="srv.printName"
+          [maxLength]="srv.tplNameLength"
+          [ngModelOptions]="{ standalone: true }"
+          placeholder="请输入模板名称"
+        />
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label nzRequired>纸张类型</nz-form-label>
+      <nz-form-control>
+        <nz-select
+          [(ngModel)]="srv.paper"
+          (ngModelChange)="srv.paperChange($event)"
+          [ngModelOptions]="{ standalone: true }"
+        >
+          <nz-option *ngFor="let p of srv.papers" [nzValue]="p" [nzLabel]="p.name"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item *ngIf="!srv.paper.value">
+      <nz-form-control>
+        <nz-col nzSpan="12">
+          <nz-input-number
+            [ngModelOptions]="{ standalone: true }"
+            [nzMin]="0"
+            [nzMax]="300"
+            [(ngModel)]="srv.paperWidth"
+          ></nz-input-number>
+        </nz-col>
+        <div nz-col nzSpan="12">
+          <nz-input-number
+            [ngModelOptions]="{ standalone: true }"
+            [nzMin]="0"
+            [nzMax]="300"
+            [ngStyle]="{ marginLeft: '16px' }"
+            [(ngModel)]="srv.paperHeight"
+          ></nz-input-number>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>内边距</nz-form-label>
+      <nz-form-control>
+        <nz-col nzSpan="12">
+          <nz-slider
+            [nzMin]="0"
+            [nzMax]="50"
+            [(ngModel)]="srv.padding"
+            [ngModelOptions]="{ standalone: true }"
+          ></nz-slider>
+        </nz-col>
+        <div nz-col nzSpan="4">
+          <nz-input-number
+            [ngModelOptions]="{ standalone: true }"
+            [nzMin]="0"
+            [nzMax]="50"
+            [ngStyle]="{ marginLeft: '16px' }"
+            [(ngModel)]="srv.padding"
+          ></nz-input-number>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>表头高度</nz-form-label>
+      <nz-form-control>
+        <nz-col nzSpan="12">
+          <nz-slider
+            [nzMin]="0"
+            [nzMax]="374"
+            [(ngModel)]="srv.headerHeight"
+            [ngModelOptions]="{ standalone: true }"
+          ></nz-slider>
+        </nz-col>
+        <div nz-col nzSpan="4">
+          <nz-input-number
+            [ngModelOptions]="{ standalone: true }"
+            [nzMin]="0"
+            [nzMax]="374"
+            [ngStyle]="{ marginLeft: '16px' }"
+            [(ngModel)]="srv.headerHeight"
+          ></nz-input-number>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>表尾高度</nz-form-label>
+      <nz-form-control>
+        <nz-col nzSpan="12">
+          <nz-slider
+            [nzMin]="0"
+            [nzMax]="374"
+            [(ngModel)]="srv.footerHeight"
+            [ngModelOptions]="{ standalone: true }"
+          ></nz-slider>
+        </nz-col>
+        <div nz-col nzSpan="4">
+          <nz-input-number
+            [ngModelOptions]="{ standalone: true }"
+            [nzMin]="0"
+            [nzMax]="374"
+            [ngStyle]="{ marginLeft: '16px' }"
+            [(ngModel)]="srv.footerHeight"
+          ></nz-input-number>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>表格行高</nz-form-label>
+      <nz-form-control>
+        <nz-col nzSpan="12">
+          <nz-slider
+            [nzMin]="0"
+            [nzMax]="374"
+            [(ngModel)]="srv.rowHeight"
+            [ngModelOptions]="{ standalone: true }"
+          ></nz-slider>
+        </nz-col>
+        <div nz-col nzSpan="4">
+          <nz-input-number
+            [ngModelOptions]="{ standalone: true }"
+            [nzMin]="0"
+            [nzMax]="374"
+            [ngStyle]="{ marginLeft: '16px' }"
+            [(ngModel)]="srv.rowHeight"
+          ></nz-input-number>
+        </div>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>页眉</nz-form-label>
+      <nz-form-control>
+        <nz-select [(ngModel)]="srv.paperHeader" [ngModelOptions]="{ standalone: true }">
+          <nz-option *ngFor="let p of srv.paperHeaders" [nzValue]="p" [nzLabel]="p.name"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>页脚</nz-form-label>
+      <nz-form-control>
+        <nz-select [(ngModel)]="srv.paperFooter" [ngModelOptions]="{ standalone: true }">
+          <nz-option *ngFor="let p of srv.paperFooters" [nzValue]="p" [nzLabel]="p.name"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>单据批量打印设置</nz-form-label>
+      <nz-form-control>
+        <label
+          nz-checkbox
+          [nzDisabled]="srv.fixedFooter"
+          [(ngModel)]="srv.isContinuousPrinting"
+          [ngModelOptions]="{ standalone: true }"
+          >连续打印（不换页打印）</label
+        >
+        <i
+          nz-icon
+          nzType="question-circle"
+          nzTheme="outline"
+          [nzTooltipTitle]="tplTip"
+          nzTooltipPlacement="top"
+          nz-tooltip
+        ></i>
+        <ng-template #tplTip>
+          <p>连续打印，不换纸打印下一张订单；</p>
+          <p>不连续打印，换纸打印下一张订单</p>
+        </ng-template>
+      </nz-form-control>
+    </nz-form-item>
+    <nz-form-item>
+      <nz-form-label>表头表尾</nz-form-label>
+      <nz-form-control>
+        <label nz-checkbox [(ngModel)]="srv.paginalHeader" [ngModelOptions]="{ standalone: true }">每页打印表头</label>
+        <br />
+        <label nz-checkbox [(ngModel)]="srv.paginalFooter" [ngModelOptions]="{ standalone: true }">每页打印表尾</label>
+        <br />
+        <label
+          nz-checkbox
+          [nzDisabled]="srv.isContinuousPrinting"
+          [(ngModel)]="srv.fixedFooter"
+          [ngModelOptions]="{ standalone: true }"
+          >表尾锁定底部</label
+        >
+        <i
+          nz-icon
+          nzType="question-circle"
+          nzTheme="outline"
+          nzTooltipTitle="表尾始终在纸张底部。不开启，则表尾在打印内容结束后。"
+          nzTooltipPlacement="top"
+          nz-tooltip
+        ></i>
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</ng-template>
+
+<ng-template #dataTpl>
+  <nz-collapse [nzBordered]="false">
+    <nz-collapse-panel nzHeader="表头字段">
+      <ng-container *ngFor="let p of srv.formHeaders">
+        <div class="collapse-checkbox">
+          <label
+            class="collapse-checkbox"
+            nz-checkbox
+            [(ngModel)]="p.selected"
+            [nzDisabled]="p.always"
+            (ngModelChange)="srv.formHeaderChange()"
+            [ngModelOptions]="{ standalone: true }"
+            >{{ p.title }}
+          </label>
+          <div *ngIf="srv.isDesign" class="field-del">
+            <button nz-button nzType="primary" nzShape="circle" nzSize="small" (click)="srv.delField(p)">
+              <i nz-icon nzType="delete" nzTheme="outline"></i>
+            </button>
+          </div>
+          <input
+            *ngIf="srv.isTypeInput(p)"
+            nz-input
+            [(ngModel)]="p.value"
+            [maxLength]="p.maxLength || srv.fieldLength"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </div>
+      </ng-container>
+    </nz-collapse-panel>
+    <nz-collapse-panel nzHeader="表体字段">
+      <ng-container *ngFor="let p of srv.formBodys">
+        <div class="collapse-checkbox">
+          <label
+            nz-checkbox
+            [(ngModel)]="p.selected"
+            [nzDisabled]="p.always"
+            (ngModelChange)="srv.formBodyChange()"
+            [ngModelOptions]="{ standalone: true }"
+            >{{ p.title }}
+          </label>
+          <div *ngIf="srv.isDesign" class="field-del">
+            <button nz-button nzType="primary" nzShape="circle" nzSize="small" (click)="srv.delField(p)">
+              <i nz-icon nzType="delete" nzTheme="outline"></i>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </nz-collapse-panel>
+    <nz-collapse-panel nzHeader="数据合计">
+      <ng-container *ngFor="let p of srv.formCounts">
+        <div class="collapse-checkbox">
+          <label
+            nz-checkbox
+            [(ngModel)]="p.selected"
+            [nzDisabled]="p.always"
+            (ngModelChange)="srv.formCountChange()"
+            [ngModelOptions]="{ standalone: true }"
+            >{{ p.title }}
+          </label>
+          <div *ngIf="srv.isDesign" class="field-del">
+            <button nz-button nzType="primary" nzShape="circle" nzSize="small" (click)="srv.delField(p)">
+              <i nz-icon nzType="delete" nzTheme="outline"></i>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </nz-collapse-panel>
+    <nz-collapse-panel nzHeader="表尾字段">
+      <ng-container *ngFor="let p of srv.formFooters">
+        <div class="collapse-checkbox">
+          <label
+            class="collapse-checkbox"
+            nz-checkbox
+            [(ngModel)]="p.selected"
+            [nzDisabled]="p.always"
+            (ngModelChange)="srv.formFooterChange()"
+            [ngModelOptions]="{ standalone: true }"
+            >{{ p.title }}
+          </label>
+          <div *ngIf="srv.isDesign" class="field-del">
+            <button nz-button nzType="primary" nzShape="circle" nzSize="small" (click)="srv.delField(p)">
+              <i nz-icon nzType="delete" nzTheme="outline"></i>
+            </button>
+          </div>
+          <input
+            *ngIf="srv.isTypeInput(p)"
+            nz-input
+            [disabled]="!p.selected"
+            [(ngModel)]="p.value"
+            [maxLength]="p.maxLength || srv.fieldLength"
+            [ngModelOptions]="{ standalone: true }"
+          />
+        </div>
+      </ng-container>
+    </nz-collapse-panel>
+    <nz-collapse-panel nzHeader="打印图片" *ngIf="srv.isShowPic">
+      <nz-upload
+        [nzAction]="uploadUrl"
+        nzListType="picture-card"
+        [(nzFileList)]="srv.formPic"
+        (nzChange)="srv.upload($event)"
+        [nzShowButton]="srv.formPic.length < 2"
+      >
+        <i nz-icon nzType="plus"></i>
+        <div class="ant-upload-text">上传</div>
+      </nz-upload>
+    </nz-collapse-panel>
+  </nz-collapse>
+</ng-template>

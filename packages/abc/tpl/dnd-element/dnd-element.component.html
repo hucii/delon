@@ -1,0 +1,40 @@
+<div
+  class="lm-dnd-el"
+  [ngClass]="{ 'lm-dnd-el-active': data.isActive }"
+  #dndEl
+  nz-resizable
+  nzBounds="window"
+  [nzMaxWidth]="maxWidth"
+  [nzMinWidth]="minWidth"
+  [nzMaxHeight]="maxHeight"
+  [nzMinHeight]="minHeight"
+  [style.height.px]="data.height"
+  [style.width.px]="data.width"
+  [style.transform]="data.transform"
+  [style.font-size.px]="data.fontSize"
+  [style.font-weight]="data.fontWeight"
+  [style.font-style]="data.fontStyle"
+  [style.text-decoration]="data.textDecoration"
+  [style.text-align]="data.textAlign"
+  (nzResize)="onResize($event)"
+  [cdkDragBoundary]="boundary"
+  cdkDrag
+  (cdkDragEnded)="dragEnded($event)"
+  (cdkDragStarted)="dragStart($event)"
+>
+  <nz-resize-handles></nz-resize-handles>
+  <div
+    class="dnd-el-handle"
+    cdkDragHandle
+    #dhEl
+    [style.text-decoration]="data.textDecoration"
+    [style.text-align]="data.textAlign"
+  >
+    <ng-content></ng-content>
+  </div>
+  <div class="lm-dnd-el-del" *ngIf="isShowDel">
+    <button nz-button nzType="primary" nzShape="circle" nzSize="small" (click)="del()">
+      <i nz-icon nzType="delete" nzTheme="outline"></i>
+    </button>
+  </div>
+</div>

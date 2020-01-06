@@ -27,4 +27,7 @@ export * from '@delon/abc/qr';
 export * from '@delon/abc/date-picker';
 export * from '@delon/abc/loading';
 
+export * from '@delon/abc/address';
+export * from '@delon/abc/tpl';
+
 export * from './abc.module';

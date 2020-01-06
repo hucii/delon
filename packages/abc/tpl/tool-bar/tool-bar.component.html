@@ -1,0 +1,147 @@
+<div class="toolbar">
+  <div class="inner">
+    <div class="left">
+      <button nz-button class="m-hsm" nzSize="small" nzType="default" (click)="srv.reset()">
+        恢复默认布局
+      </button>
+      <div class="controller">
+        字体大小
+        <nz-input-number
+          class="m-hsm"
+          [(ngModel)]="srv.fontSize"
+          nzSize="small"
+          [nzMin]="8"
+          [nzStep]="1"
+          (ngModelChange)="srv.changeFontSize($event)"
+        ></nz-input-number>
+        <button
+          nz-button
+          class="m-hsm"
+          [ngClass]="{ active: srv.isBold }"
+          nzSize="small"
+          nzType="default"
+          (click)="srv.setStyle('fontWeight', 'bold')"
+        >
+          <i nz-icon nzType="bold" nzTheme="outline"></i>
+        </button>
+        <button
+          nz-button
+          class="m-hsm"
+          [ngClass]="{ active: srv.isItalic }"
+          nzSize="small"
+          nzType="default"
+          (click)="srv.setStyle('fontStyle', 'italic')"
+        >
+          <i nz-icon nzType="italic" nzTheme="outline"></i>
+        </button>
+        <button
+          nz-button
+          class="m-hsm"
+          [ngClass]="{ active: srv.isUnderline }"
+          nzSize="small"
+          nzType="default"
+          (click)="srv.setStyle('textDecoration', 'underline')"
+        >
+          <i nz-icon nzType="underline" nzTheme="outline"></i>
+        </button>
+        <!-- <button
+          nz-button
+          class="m-hsm"
+          [ngClass]="{ active: srv.isAlignLeft }"
+          nzSize="small"
+          nzType="default"
+          (click)="srv.setStyle('textAlign', 'left')"
+        >
+          <i nz-icon nzType="align-left" nzTheme="outline"></i>
+        </button>
+        <button
+          nz-button
+          class="m-hsm"   
+          [ngClass]="{ active: srv.isAlignCenter }"
+          nzSize="small"
+          nzType="default"
+          (click)="srv.setStyle('textAlign', 'center')"
+        >
+          <i nz-icon nzType="align-center" nzTheme="outline"></i>
+        </button>
+        <button
+          nz-button
+          class="m-hsm"
+          [ngClass]="{ active: srv.isAlignRight }"
+          nzSize="small"
+          nzType="default"
+          (click)="srv.setStyle('textAlign', 'right')"
+        >
+          <i nz-icon nzType="align-right" nzTheme="outline"></i>
+        </button> -->
+      </div>
+    </div>
+    <div class="right">
+      <button *ngIf="srv.isBack" nz-button class="m-hsm" nzSize="small" nzType="default" (click)="goBack()">
+        返回列表
+      </button>
+      <button *ngIf="srv.isDesign" nz-button class="m-hsm" nzSize="small" nzType="default" (click)="addField()">
+        添加数据源
+      </button>
+      <button nz-button class="m-hsm" nzSize="small" nzType="default" (click)="preview($event)">
+        打印预览
+      </button>
+      <button nz-button class="m-hsm" nzSize="small" nzType="primary" (click)="save($event)">
+        保存
+      </button>
+    </div>
+  </div>
+</div>
+<div class="tpl-print-temp" #tplPrint>
+  <lm-print-frame></lm-print-frame>
+</div>
+
+<ng-template #fieldTpl>
+  <form nz-form [formGroup]="form">
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="email">区域</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24">
+        <nz-select formControlName="area" (ngModelChange)="areaChange($event)">
+          <nz-option *ngFor="let p of areas" [nzValue]="p.value" [nzLabel]="p.title"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="email">标题</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24">
+        <input nz-input formControlName="title" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" [nzRequired]="isFieldRequired" nzFor="email">绑定字段</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24">
+        <input nz-input formControlName="field" />
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="email">是否必须</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24">
+        <label nz-checkbox formControlName="always"></label>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item>
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="email">类型</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24">
+        <nz-select formControlName="type" (ngModelChange)="typeChange($event)">
+          <nz-option *ngFor="let p of types" [nzValue]="p.value" [nzLabel]="p.title"></nz-option>
+        </nz-select>
+      </nz-form-control>
+    </nz-form-item>
+
+    <nz-form-item *ngIf="isShowInput()">
+      <nz-form-label [nzSm]="6" [nzXs]="24" nzRequired nzFor="email">输入值</nz-form-label>
+      <nz-form-control [nzSm]="14" [nzXs]="24">
+        <input nz-input formControlName="value" />
+      </nz-form-control>
+    </nz-form-item>
+  </form>
+</ng-template>

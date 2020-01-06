@@ -1,0 +1,67 @@
+<div
+  class="p-tpl"
+  [style.padding-top.px]="srv.padding >= 30 ? srv.padding : 30"
+  [style.padding-bottom.px]="srv.padding >= 30 ? srv.padding : 30"
+  [style.padding-left.px]="srv.padding"
+  [style.padding-right.px]="srv.padding"
+  [style.height.px]="srv.paperHeight"
+  [style.width.px]="srv.paperWidth"
+  [style.position]="'relative'"
+  [style.border]="'1px solid transparent'"
+  *ngFor="let page of srv.printData; let pageIndex = index"
+>
+  <div class="page-header" *ngIf="srv.paperHeader === 1" [style.width.px]="srv.paperWidth">
+    {{ srv.paperHeaderText }}
+  </div>
+  <div class="page-footer" *ngIf="srv.paperFooter !== 0" [style.width.px]="srv.paperWidth">
+    {{ srv.getPageTips(pageIndex) }}
+  </div>
+  <div class="header" [style.height.px]="srv.headerHeight" *ngIf="page.showHeader">
+    <div class="placeholder" *ngFor="let h of srv.formPics">
+      <div [style]="h.style | style">
+        <img [src]="h.value" />
+      </div>
+    </div>
+    <div class="placeholder" *ngFor="let h of srv.formHeaders">
+      <div [style]="h.style | style">{{ h.title }}{{ h.title ? ':' : '' }} {{ h.value }}</div>
+    </div>
+  </div>
+  <div class="body">
+    <table>
+      <thead>
+        <tr>
+          <th [style.width.px]="45">
+            <div [style.height.px]="23" [style.overflow]="'hidden'">
+              序号
+            </div>
+          </th>
+          <th *ngFor="let h of srv.formBodys" [style]="h.style | style">
+            <div [style.height.px]="23" [style.overflow]="'hidden'">
+              {{ h.title }}
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of page.formData; let i = index">
+          <td>{{ page.baseIndex + i + 1 }}</td>
+          <td *ngFor="let h of srv.formBodys">
+            <div [style.height.px]="srv.rowHeight" [style.overflow]="'hidden'">
+              {{ item[h.field] }}
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div
+    class="footer"
+    [style.height.px]="srv.footerHeight"
+    [ngStyle]="{ bottom: srv.fixedFooter ? '30px' : 'auto', width: 'calc(100% - ' + srv.padding * 2 + 'px)' }"
+    *ngIf="page.showFooter"
+  >
+    <div class="placeholder" *ngFor="let h of srv.formFooters">
+      <div [style]="h.style | style">{{ h.title }}{{ h.title ? ':' : '' }} {{ h.value }}</div>
+    </div>
+  </div>
+</div>

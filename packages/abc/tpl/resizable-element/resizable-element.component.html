@@ -1,0 +1,15 @@
+<div
+  class="resizable-el"
+  #dndEl
+  nz-resizable
+  nzBounds="window"
+  [style.width.px]="data.width"
+  (nzResize)="onResize($event)"
+>
+  <nz-resize-handle nzDirection="right">
+    <!-- <div class="right-wrap">
+      <i class="right" nz-icon nzType="more" nzTheme="outline"></i>
+    </div> -->
+  </nz-resize-handle>
+  <ng-content></ng-content>
+</div>
